@@ -4,6 +4,7 @@ const Conversation = require("../models/Conversation");
 const checkLogin = require("../middleware/checkLogin");
 const multipleFileUpload = require("../middleware/multiple-file-upload");
 const cloudinaryConfig = require("../config/cloudinary");
+const fs = require("fs");
 
 const inboxRouter = express.Router();
 
@@ -54,8 +55,9 @@ inboxRouter.post(
 
         // Extract the secure URLs from the Cloudinary responses
         attachments = results.map((result) => result.secure_url);
-      }
 
+        req.files.map((file) => fs.unlinkSync(file.path));
+      }
 
       const newMessage = new Message({
         text: req.body.message,

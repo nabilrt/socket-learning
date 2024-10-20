@@ -4,12 +4,15 @@ export const normalizeMessage = (message, selectedConversation) => {
     sender: {
       id: message.sender.id,
       name: message.sender.name,
+      avatar: message.sender.avatar,
     },
     receiver: {
       id: message.receiver?.id || selectedConversation.participant.id,
       name: message.receiver?.name || selectedConversation.participant.name,
+      avatar: message.receiver?.name || selectedConversation.participant.avatar,
     },
     text: message.message || message.text, // Handle different field names
+    attachments: message.attachments,
     date_time: message.date_time || new Date(),
   };
 };

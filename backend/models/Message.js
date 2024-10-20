@@ -5,7 +5,7 @@ const messageSchema = mongoose.Schema(
     text: {
       type: String,
     },
-    attachment: [
+    attachments: [
       {
         type: String,
       },

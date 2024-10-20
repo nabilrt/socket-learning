@@ -2,6 +2,8 @@ const express = require("express");
 const Message = require("../models/Message");
 const Conversation = require("../models/Conversation");
 const checkLogin = require("../middleware/checkLogin");
+const multipleFileUpload = require("../middleware/multiple-file-upload");
+const cloudinaryConfig = require("../config/cloudinary");
 
 const inboxRouter = express.Router();
 
@@ -11,10 +13,12 @@ inboxRouter.post("/conversation", checkLogin, async (req, res) => {
       creator: {
         id: req.user.userId,
         name: req.user.username,
+        avatar: req.user.avatarUrl || null,
       },
       participant: {
         name: req.body.participant,
         id: req.body.id,
+        avatar: req.body.avatar || null,
       },
     });
 
@@ -33,53 +37,76 @@ inboxRouter.post("/conversation", checkLogin, async (req, res) => {
   }
 });
 
-inboxRouter.post("/message", checkLogin, async (req, res) => {
-  try {
-    // save message text/attachment in database
+inboxRouter.post(
+  "/message",
+  checkLogin,
+  multipleFileUpload,
+  async (req, res) => {
+    try {
+      let attachments = []; // Declare this before the 'if' block
 
-    const newMessage = new Message({
-      text: req.body.message,
-      sender: {
-        id: req.user.userId,
-        name: req.user.username,
-      },
-      receiver: {
-        id: req.body.receiverId,
-        name: req.body.receiverName,
-      },
-      conversation_id: req.body.conversationId,
-    });
+      // If there are files to upload
+      if (req.files && req.files.length > 0) {
+        const uploadPromises = req.files.map((file) =>
+          cloudinaryConfig.uploader.upload(file.path)
+        );
+        const results = await Promise.all(uploadPromises);
 
-    const result = await newMessage.save();
-    console.log(global);
+        // Extract the secure URLs from the Cloudinary responses
+        attachments = results.map((result) => result.secure_url);
+      }
 
-    // emit socket event
-    global.io.emit("new_message", {
-      message: {
-        conversation_id: req.body.conversationId,
+
+      const newMessage = new Message({
+        text: req.body.message,
+        attachments: attachments, // Pass the populated or empty array here
         sender: {
           id: req.user.userId,
           name: req.user.username,
+          avatar: req.user.avatarUrl || null,
         },
-        message: req.body.message,
-        date_time: result.date_time,
-      },
-    });
+        receiver: {
+          id: req.body.receiverId,
+          name: req.body.receiverName,
+          avatar: req.body.avatar || null,
+        },
+        conversation_id: req.body.conversationId,
+      });
 
-    res.status(200).json({
-      message: "Successful!",
-      data: result,
-    });
-  } catch (err) {
-    res.status(500).json({
-      errors: {
-        common: {
-          msg: err.message,
+      const result = await newMessage.save();
+
+      // Emit socket event
+      global.io.emit("new_message", {
+        message: {
+          conversation_id: req.body.conversationId,
+          sender: {
+            id: req.user.userId,
+            name: req.user.username,
+            avatar: req.user.avatarUrl,
+          },
+          message: req.body.message,
+          attachments: attachments, // Ensure the correct attachments array is emitted
+          date_time: result.date_time,
         },
-      },
-    });
+      });
+
+      // Send the response only once
+      return res.status(200).json({
+        message: "Successful!",
+        data: result,
+      });
+    } catch (err) {
+      // Handle errors and send a response
+      return res.status(500).json({
+        errors: {
+          common: {
+            msg: err.message,
+          },
+        },
+      });
+    }
   }
-});
+);
 
 // send message
 inboxRouter.get("/conversations", checkLogin, async (req, res) => {

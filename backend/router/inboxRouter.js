@@ -77,6 +77,10 @@ inboxRouter.post(
       });
 
       const result = await newMessage.save();
+      const conv = await Conversation.findByIdAndUpdate(
+        req.body.conversationId,
+        { lastMessage: result }
+      );
 
       // Emit socket event
       global.io.emit("new_message", {

@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-
+const messageSchema = require("./Message");
 const conversationSchema = mongoose.Schema(
   {
     creator: {
@@ -13,6 +13,8 @@ const conversationSchema = mongoose.Schema(
       name: String,
       avatar: String,
     },
+    lastMessage: {},
+
     last_updated: {
       type: Date,
       default: Date.now,

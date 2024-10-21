@@ -45,11 +45,12 @@ inboxRouter.post(
   async (req, res) => {
     try {
       let attachments = []; // Declare this before the 'if' block
+      console.log(req.files);
 
       // If there are files to upload
       if (req.files && req.files.length > 0) {
         const uploadPromises = req.files.map((file) =>
-          cloudinaryConfig.uploader.upload(file.path)
+          cloudinaryConfig.uploader.upload(file.path, { resource_type: "auto" })
         );
         const results = await Promise.all(uploadPromises);
 

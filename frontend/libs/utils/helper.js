@@ -9,7 +9,7 @@ export const normalizeMessage = (message, selectedConversation) => {
     receiver: {
       id: message.receiver?.id || selectedConversation.participant.id,
       name: message.receiver?.name || selectedConversation.participant.name,
-      avatar: message.receiver?.name || selectedConversation.participant.avatar,
+      avatar: message.receiver?.avatar || selectedConversation.participant.avatar,
     },
     text: message.message || message.text, // Handle different field names
     attachments: message.attachments,

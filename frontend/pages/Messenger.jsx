@@ -257,6 +257,7 @@ const Messenger = () => {
               user={user}
               setShowProfile={setShowProfile}
               showProfile={showProfile}
+              setSelectedConversation={setSelectedConversation}
             />
             <div className="flex flex-grow flex-col space-y-3 p-4 overflow-y-auto">
               <div className="flex flex-col justify-between space-y-6">

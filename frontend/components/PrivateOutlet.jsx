@@ -4,5 +4,11 @@ import { useAuth } from "../libs/context/auth-context";
 export default function PrivateOutlet() {
   const { authenticated } = useAuth();
 
-  return authenticated ? <Outlet /> : <Navigate to="/" />;
+  return authenticated ? (
+    <div className="font-inter">
+      <Outlet />
+    </div>
+  ) : (
+    <Navigate to="/" />
+  );
 }

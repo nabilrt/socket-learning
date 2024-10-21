@@ -41,7 +41,7 @@ const ChatOtherUserInfo = ({
                     {message?.attachments.map((attachment, attachmentIndex) => (
                       <div
                         key={attachmentIndex}
-                        className="flex items-center p-2 bg-slate-100 border w-full"
+                        className="flex items-center p-2 bg-slate-100 border w-full justify-between"
                       >
                         {/* Attachment link */}
                         <div className="flex flex-col gap-2">

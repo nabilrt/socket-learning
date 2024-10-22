@@ -14,7 +14,6 @@ userRouter.post("/add-user", singleUpload, async (req, res) => {
   try {
     const { name, email, password } = req.body;
     const file = req.file;
-    console.log(file);
     if (file) {
       if (!name && !email && !password) {
         return res.status(400).json({
@@ -36,7 +35,6 @@ userRouter.post("/add-user", singleUpload, async (req, res) => {
           }
         }
       );
-      console.log(image);
       const avatar = image.secure_url;
 
       const user = new User({
@@ -72,7 +70,6 @@ userRouter.post("/add-user", singleUpload, async (req, res) => {
       });
     }
   } catch (err) {
-    console.log(err);
     res.status(500).json({
       errors: {
         common: {

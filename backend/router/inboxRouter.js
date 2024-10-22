@@ -45,7 +45,6 @@ inboxRouter.post(
   async (req, res) => {
     try {
       let attachments = []; // Declare this before the 'if' block
-      console.log(req.files);
 
       // If there are files to upload
       if (req.files && req.files.length > 0) {
@@ -117,7 +116,12 @@ inboxRouter.post(
 
 // send message
 inboxRouter.get("/conversations", checkLogin, async (req, res) => {
-  const conversations = await Conversation.find();
+  const conversations = await Conversation.find({
+    $or: [
+      { "creator.id": req.user.userId },
+      { "participant.id": req.user.userId },
+    ],
+  });
   res.status(200).json({
     conversations,
     message: "Conversation returned successfully!",

@@ -9,6 +9,24 @@ export const loginUser = async (data) => {
   }
 };
 
+export const registerUser = async (data) => {
+  try {
+    const response = await axios.post("/user/add-user", data);
+    return response;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+export const forgetPassword = async (data) => {
+  try {
+    const response = await axios.post("/user/forgotPassword", data);
+    return response;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
 export const userDetails = async () => {
   try {
     const response = await axios.get("/user/me");

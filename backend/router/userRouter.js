@@ -6,6 +6,8 @@ const jwt = require("jsonwebtoken");
 const singleUpload = require("../middleware/file-upload");
 const cloudinaryConfig = require("../config/cloudinary");
 const fs = require("fs");
+const transporter = require("../config/mailer");
+require("dotenv").config();
 
 const userRouter = express.Router();
 
@@ -126,6 +128,46 @@ userRouter.get("/users", async (req, res) => {
     });
   } catch (err) {
     //next(err);
+  }
+});
+userRouter.post("/forgotPassword", async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email: email });
+    if (!user) {
+      return res.status(500).json({
+        message: "User not found",
+      });
+    }
+    const characters =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+~`|}{[]:;?><,./-=";
+    let result = "";
+    const charactersLength = characters.length;
+
+    for (let i = 0; i < 8; i++) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    const hashedPassword = await bcrypt.hash(result, 10);
+    await User.findByIdAndUpdate(user._id, {
+      password: hashedPassword,
+    });
+
+    const mailSend = await transporter.sendMail({
+      from: "info@chatify.com",
+      to: email,
+      subject: "Your password has been reset successfully",
+      text: `Hi ${user.name}`,
+      html: `<br/> Your password has been reset successfully. <br/> Your Updated Password is : <strong> ${result} </strong> <br/> Please Keep it safe. <br/> <br/> Best Regards <br/> <strong>Chatify</strong>`,
+    });
+
+    res.status(200).json({
+      message: "Password Reset Successful",
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: err.message,
+    });
   }
 });
 userRouter.get("/me", checkLogin, async (req, res) => {

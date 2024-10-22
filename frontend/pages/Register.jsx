@@ -1,25 +1,30 @@
 import React from "react";
 import { useForm } from "react-hook-form";
-import { useAuth } from "../libs/context/auth-context";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../layouts/AuthLayout";
+import { registerUser } from "../libs/utils/api";
 
-const LoginPage = () => {
+const Register = () => {
   const [loginError, setLoginError] = useState(null);
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
+  const [registerLoader, setRegisterLoader] = useState(false);
 
-  const { userLogin, loginLoader } = useAuth();
+  let navigate = useNavigate();
 
   const onSubmit = async (data) => {
-    setLoginError(null); // Clear previous error
-    const errorMessage = await userLogin(data);
-    if (errorMessage) {
-      setLoginError(errorMessage); // Set error message if login fails
+    setRegisterLoader(true);
+    try {
+      const response = await registerUser(data);
+      setRegisterLoader(false);
+      navigate("/");
+    } catch (err) {
+      setRegisterLoader(false);
+      setLoginError("Unable to Complete Registration. Try Again");
     }
   };
 
@@ -42,15 +47,20 @@ const LoginPage = () => {
                   />
                 </div>
               </div>
-              <div className="mb-6">
-                <div className="float-right">
-                  <Link
-                    to="/forget-password"
-                    className="text-gray-500 text-[13px] cursor-pointer hover:underline "
-                  >
-                    Forgot password?
-                  </Link>
+              <div className="mb-5">
+                <label className="font-medium text-gray-700 ">Full Name</label>
+                <div className="flex items-center mt-2 mb-3 rounded-3 bg-slate-50/50 ">
+                  <input
+                    type="text"
+                    className="w-full px-4 py-2 border border-gray-200   placeholder:text-[14px] bg-slate-50/50 text-[14px] focus:ring-0 outline-none rounded-md"
+                    placeholder="Enter Full Name"
+                    {...register("name", {
+                      required: "Name is required",
+                    })}
+                  />
                 </div>
+              </div>
+              <div className="mb-6">
                 <label className="font-medium text-gray-700 ">Password</label>
                 <div className="flex items-center mt-2 mb-3 rounded-3 bg-slate-50/50 ">
                   <input
@@ -58,7 +68,7 @@ const LoginPage = () => {
                     {...register("password", {
                       required: "Password is required",
                     })}
-                    className="w-full px-4 py-2 border border-gray-200 rounded rounded-l-none placeholder:text-[14px] bg-slate-50/50 text-[14px] focus:ring-0 "
+                    className="w-full px-4 py-2 border border-gray-200 outline-none rounded rounded-l-none placeholder:text-[14px] bg-slate-50/50 text-[14px] focus:ring-0 "
                     placeholder="Enter Password"
                     aria-label="Enter Password"
                     aria-describedby="basic-addon4"
@@ -72,20 +82,28 @@ const LoginPage = () => {
                   lineHeight: "21px",
                   fontWeight: "400",
                   color: "#E03838",
-                  marginTop: "8px",
-                  marginbottom: "8px",
-                  height: "25px",
+                  marginTop: "12px",
+                  height: "21px",
                 }}
               >
                 {loginError && <span>{loginError}</span>}
               </div>
               <div className="grid">
                 <button
-                  className="py-2 text-white border-transparent rounded-md bg-violet-500 hover:bg-violet-600 text-[16px]"
+                  className="py-2 text-white border-transparent rounded-md bg-violet-500 hover:bg-violet-600 text-[16px] disabled:bg-slate-400"
                   type="submit"
+                  disabled={registerLoader}
                 >
-                  {loginLoader ? "Loading..." : "Sign in"}
+                  {registerLoader ? "Signing Up..." : "Sign Up"}
                 </button>
+              </div>
+              <div className="mt-5 text-center">
+                <p className="mb-0 text-gray-500 ">
+                  By registering you agree to the Chatvia{" "}
+                  <Link href="/" className="text-violet-500">
+                    Terms of Use
+                  </Link>
+                </p>
               </div>
             </form>
           </div>
@@ -93,9 +111,9 @@ const LoginPage = () => {
       </div>
       <div className="mt-10 text-center">
         <p className="mb-5 text-gray-700 ">
-          Don't have an account ?{" "}
-          <Link to="/register" className="fw-medium text-violet-500">
-            Signup now
+          Already have an account ?{" "}
+          <Link to="/" className="fw-medium text-violet-500">
+            Signin
           </Link>
         </p>
         <p class="text-gray-700 ">
@@ -106,4 +124,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default Register;

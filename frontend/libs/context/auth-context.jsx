@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { loginUser, userDetails } from "../utils/api";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const AuthContext = createContext(null);
 
@@ -10,6 +10,7 @@ export const AuthContextProvider = ({ children }) => {
   const [loginLoader, setLoginLoader] = useState(false);
   const [authenticated, setIsAuthenticated] = useState(false);
   let navigate = useNavigate();
+  let pathname = useLocation();
 
   useEffect(() => {
     async function checkLogin() {
@@ -40,7 +41,9 @@ export const AuthContextProvider = ({ children }) => {
       }
     }
     checkLogin();
-  }, [navigate]);
+  }, [
+    navigate && (pathname !== "/register" || pathname !== "/forget-password"),
+  ]);
 
   const userLogin = async (data) => {
     setLoginLoader(true);
@@ -53,7 +56,7 @@ export const AuthContextProvider = ({ children }) => {
         setUser(userData.data.user);
         setIsAuthenticated(true);
         localStorage.setItem("user", JSON.stringify(userData.data.user));
-        navigate("/messenger");
+        navigate("/messenger/chat");
         return null; // No error
       } else {
         return "Invalid username or password."; // Return error message

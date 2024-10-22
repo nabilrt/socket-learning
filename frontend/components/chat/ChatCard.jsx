@@ -6,22 +6,32 @@ const ChatCard = ({
 }) => {
   return (
     <div
-      className={`flex space-x-3 bg-[#e6daff] ${
+      className={`px-5 py-[15px]  hover:bg-purple-200 ${
         selectedConversation && selectedConversation._id === conv._id
-          ? "bg-[#e6daff]  "
-          : "bg-white "
-      }  overflow-y-auto p-4 pl-4 shadow-sm hover:bg-[#e2dcf3]`}
+          ? "bg-purple-100"
+          : "bg-purple-200"
+      }`}
       onClick={() => setSelectedConversation(conv)}
     >
-      <div className="flex w-full  space-x-3">
-        <div className="mr-auto flex items-center space-x-3">
-          <img src={conversationData.otherAvatar} height="50" width="50" />
-          <div className="flex flex-col space-y-2">
-            <h2 className="text-sm font-semibold">
-              {conversationData.otherPerson}
-            </h2>
-            <p className="text-xs">{conversationData.messagePreview}</p>
-          </div>
+      <div className="flex gap-4">
+        <div className="relative self-center ltr:mr-3 rtl:ml-3">
+          <img
+            src={conversationData.otherAvatar}
+            className="rounded-full w-9 h-9"
+            alt=""
+          />
+        </div>
+
+        <div className="flex-grow overflow-hidden">
+          <h5 className="mb-1 text-sm truncate ">
+            {conversationData.otherPerson}
+          </h5>
+          <p className="mb-0 text-gray-500 truncate text-[12px]">
+            {conversationData.messagePreview}
+          </p>
+        </div>
+        <div className="text-gray-500 text-[11px] ">
+          {conversationData.structuredLastMessageTime}
         </div>
       </div>
     </div>

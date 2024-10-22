@@ -25,7 +25,7 @@ const LoginPage = () => {
 
   return (
     <AuthLayout>
-      <div className="bg-white card rounded-sm">
+      <div className="bg-white rounded-md border border-solid border-gray-200 mb-5">
         <div className="p-5">
           <div className="p-4">
             <form onSubmit={handleSubmit(onSubmit)}>
@@ -58,7 +58,7 @@ const LoginPage = () => {
                     {...register("password", {
                       required: "Password is required",
                     })}
-                    className="w-full px-4 py-2 border border-gray-200 rounded rounded-l-none placeholder:text-[14px] bg-slate-50/50 text-[14px] focus:ring-0 "
+                    className="w-full px-4 py-2 border border-gray-200 rounded-md outline-none placeholder:text-[14px] bg-slate-50/50 text-[14px] focus:ring-0 "
                     placeholder="Enter Password"
                     aria-label="Enter Password"
                     aria-describedby="basic-addon4"

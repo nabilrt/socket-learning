@@ -16,7 +16,7 @@ const MessageInput = ({
   return (
     <div className="mb-2 px-2 flex gap-2">
       <button
-        className="px-3 py-2 bg-blue-800 hover:bg-blue-950 text-white rounded-md m-auto"
+        className="px-3 py-2 bg-violet-500 hover:bg-violet-600 text-white rounded-md m-auto"
         onClick={handleFileClick}
       >
         <IoMdAttach />
@@ -31,13 +31,13 @@ const MessageInput = ({
       />
       <input
         type="text"
-        className="px-4 py-2 outline-none border border-blue-400 rounded-md w-full"
+        className="px-4 py-2 outline-none border border-purple-400 rounded-md w-full"
         value={messageText}
         onChange={(e) => setMessageText(e.target.value)}
         placeholder="Type a message..."
       />
       <button
-        className="px-3 py-2 bg-blue-800 hover:bg-blue-950 text-white rounded-md m-auto"
+        className="px-3 py-2 bg-violet-500 hover:bg-violet-600 text-white rounded-md m-auto"
         onMouseDown={startRecording}
         onMouseUp={stopRecording}
         onMouseLeave={stopRecording} // In case the user drags the mouse away
@@ -47,7 +47,7 @@ const MessageInput = ({
       </button>
       <button
         type="submit"
-        className="px-3 py-2 bg-blue-800 hover:bg-blue-950 text-white rounded-md m-auto"
+        className="px-3 py-2 bg-violet-500 hover:bg-violet-600 text-white rounded-md m-auto"
         onClick={handleSendMessage}
         disabled={isUploading || isRecording}
       >

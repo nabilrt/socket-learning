@@ -17,6 +17,9 @@ import MessageInput from "../components/message/MessageInput";
 import ChatOtherUserInfo from "../components/chat/ChatOtherUserInfo";
 import { ImageUploadLoader, RecordingLoader } from "../libs/utils/Loaders";
 import { getReceiverDetails } from "../libs/utils/helper";
+import { BsChatSquareDots } from "react-icons/bs";
+import { FiUser } from "react-icons/fi";
+import ChatSidebar from "../components/chat/ChatSidebar";
 
 const socket = io("http://localhost:9000"); // Replace with your server URL
 
@@ -28,6 +31,7 @@ const Messenger = () => {
   const [messageText, setMessageText] = useState("");
   const [isUploading, setIsUploading] = useState(false); // For file uploads
   const [showProfile, setShowProfile] = useState(false);
+  const [selectedView, setSelectedView] = useState("chat");
 
   const scrollRef = useRef(null);
 
@@ -212,101 +216,131 @@ const Messenger = () => {
   };
 
   return (
-    <div className="w-11/12 m-auto border h-screen">
-      <div
-        className={`grid ${
-          showProfile ? "grid-cols-[30%_50%_20%]" : "grid-cols-[30%_70%]"
-        } gap-4`}
-      >
-        {/* Conversations List */}
-        <div className="flex flex-col gap-2">
-          <div className="p-2 border border-blue-400 bg-blue-300">
-            <p>Messenger</p>
-          </div>
-          <div className="p-2">
-            <input
-              type="text"
-              className="px-4 py-2 outline-none border border-blue-400 rounded-md w-full"
-              placeholder="Search People..."
-            />
-          </div>
-          {conversations?.map((conv) => {
-            const conversationData = returnMessageText(
-              conv,
-              conversationMessages,
-              user
-            );
+    <div
+      className={`grid ${
+        showProfile ? "grid-cols-[5%_20%_60%_15%]" : "grid-cols-[5%_20%_75%]"
+      } overflow-y-hidden`}
+    >
+      <ChatSidebar
+        user={user}
+        selectedView={selectedView}
+        setSelectedView={setSelectedView}
+        logout={logout}
+      />
 
-            return (
-              <ChatCard
+      <div className="tab-content bg-slate-100">
+        {selectedView === "chat" ? (
+          <div>
+            <div className="px-6 pt-6">
+              <h4 className="mb-0 text-gray-700 ">Chats</h4>
+
+              <div className="mt-5 mb-5 rounded bg-slate-100 ">
+                <input
+                  type="text"
+                  className="w-full px-4 py-2 border border-gray-200   placeholder:text-[14px] bg-white text-[14px] focus:ring-0 outline-none rounded-md"
+                  placeholder="Search messages or users"
+                  aria-label="Search messages or users"
+                  aria-describedby="basic-addon1"
+                />
+              </div>
+            </div>
+
+            <div>
+              <h5 className="px-6 mb-4 text-16 ">Recent</h5>
+
+              <div className="h-[610px] px-2">
+                <ul className="chat-user-list">
+                  <li className="  ">
+                    {conversations?.map((conv) => {
+                      const conversationData = returnMessageText(
+                        conv,
+                        conversationMessages,
+                        user
+                      );
+                      return (
+                        <ChatCard
+                          selectedConversation={selectedConversation}
+                          conv={conv}
+                          setSelectedConversation={setSelectedConversation}
+                          conversationData={conversationData}
+                        />
+                      );
+                    })}
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div>Profile View</div>
+        )}
+      </div>
+      <div class="w-full overflow-hidden transition-all duration-150 bg-white user-chat ">
+        <div class="lg:flex">
+          {selectedConversation !== null && conversationMessages ? (
+            <div class="relative w-full overflow-hidden ">
+              <MessageHeader
                 selectedConversation={selectedConversation}
-                conv={conv}
+                user={user}
+                setShowProfile={setShowProfile}
+                showProfile={showProfile}
                 setSelectedConversation={setSelectedConversation}
-                conversationData={conversationData}
               />
-            );
-          })}
-          <ChatBottomBar user={user} logout={logout} />
-        </div>
 
-        {/* Chat Section */}
-        {selectedConversation !== null && conversationMessages ? (
-          <div className="border border-l h-screen flex flex-col gap-3 justify-between">
-            <MessageHeader
-              selectedConversation={selectedConversation}
-              user={user}
-              setShowProfile={setShowProfile}
-              showProfile={showProfile}
-              setSelectedConversation={setSelectedConversation}
-            />
-            <div className="flex flex-grow flex-col space-y-3 p-4 overflow-y-auto">
-              <div className="flex flex-col justify-between space-y-6">
+              <div
+                className="h-[80vh] p-4 lg:p-6 overflow-y-auto"
+                data-simplebar=""
+              >
                 {conversationMessages.messages.map((msg, index) => (
-                  <div
-                    key={index}
-                    className={`flex flex-col space-y-1 ${
+                  <ul
+                    className={`mb-0 flex flex-col ${
                       msg.sender.id === user?._id ? "items-end" : "items-start"
                     }`}
                     ref={scrollRef}
                   >
                     <MessageList msg={msg} user={user} />
-                  </div>
+                  </ul>
                 ))}
                 <div className="flex items-center text-right space-x-2">
                   {isUploading && <ImageUploadLoader />}
                   {isRecording && <RecordingLoader />}
                 </div>
               </div>
+              <div className="z-40 w-full p-6 mb-0 bg-white border-t lg:mb-1 border-gray-50 ">
+                <div className="flex gap-2">
+                  <div className="flex-grow">
+                    <MessageInput
+                      handleFileClick={handleFileClick}
+                      fileRef={fileRef}
+                      handleFileUpload={handleFileUpload}
+                      isUploading={isUploading}
+                      messageText={messageText}
+                      setMessageText={setMessageText}
+                      startRecording={startRecording}
+                      stopRecording={stopRecording}
+                      isRecording={isRecording}
+                      handleSendMessage={handleSendMessage}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
-
-            {/* Message Input */}
-            <MessageInput
-              handleFileClick={handleFileClick}
-              fileRef={fileRef}
-              handleFileUpload={handleFileUpload}
-              isUploading={isUploading}
-              messageText={messageText}
-              setMessageText={setMessageText}
-              startRecording={startRecording}
-              stopRecording={stopRecording}
-              isRecording={isRecording}
-              handleSendMessage={handleSendMessage}
-            />
-          </div>
-        ) : (
-          <div className="flex items-center justify-center h-screen text-xl">
-            Please Select A Conversation
-          </div>
-        )}
-
-        {showProfile && (
-          <ChatOtherUserInfo
-            selectedConversation={selectedConversation}
-            user={user}
-            conversationMessages={conversationMessages}
-          />
-        )}
+          ) : (
+            <div className="flex items-center justify-center h-screen text-xl text-center">
+              Please Select A Conversation
+            </div>
+          )}
+        </div>
       </div>
+      {showProfile && (
+        <ChatOtherUserInfo
+          selectedConversation={selectedConversation}
+          user={user}
+          conversationMessages={conversationMessages}
+          setShowProfile={setShowProfile}
+          showProfile={showProfile}
+        />
+      )}
     </div>
   );
 };

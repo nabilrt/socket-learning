@@ -54,6 +54,11 @@ export function returnMessageText(conv, conversationMessages, user) {
     ? conversationMessages.messages[conversationMessages.messages.length - 1]
     : conv.lastMessage;
 
+  const lastMessageTime = conversationMessages?.messages?.length
+    ? conversationMessages.messages[conversationMessages.messages.length - 1]
+        .date_time
+    : conv.lastMessage.date_time;
+
   // Determine if the last message was sent by the user
   const isLastMessageFromUser = lastMessage?.sender?.id === user?._id;
 
@@ -85,7 +90,14 @@ export function returnMessageText(conv, conversationMessages, user) {
   } else {
     messagePreview = "No messages yet";
   }
-  return { messagePreview, otherAvatar, otherPerson };
+
+  const structuredLastMessageTime = getTimeAgo(lastMessageTime);
+  return {
+    messagePreview,
+    otherAvatar,
+    otherPerson,
+    structuredLastMessageTime,
+  };
 }
 
 export const getReceiverDetails = (selectedConversation, user) => {

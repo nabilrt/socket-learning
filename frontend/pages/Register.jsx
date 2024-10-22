@@ -68,7 +68,7 @@ const Register = () => {
                     {...register("password", {
                       required: "Password is required",
                     })}
-                    className="w-full px-4 py-2 border border-gray-200 outline-none rounded rounded-l-none placeholder:text-[14px] bg-slate-50/50 text-[14px] focus:ring-0 "
+                    className="w-full px-4 py-2 border border-gray-200 outline-none rounded-md placeholder:text-[14px] bg-slate-50/50 text-[14px] focus:ring-0 "
                     placeholder="Enter Password"
                     aria-label="Enter Password"
                     aria-describedby="basic-addon4"

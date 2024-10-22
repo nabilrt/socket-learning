@@ -6,7 +6,7 @@ const AuthLayout = ({ children }) => {
   let location = useLocation();
 
   return (
-    <div className="bg-[#f3f2fd] font-inter">
+    <div className=" font-inter" style={{ backgroundColor: "#f3f2fd" }}>
       <div className="w-full h-screen">
         <div className="px-5 py-24 sm:px-24 lg:px-0">
           <div className="grid items-center justify-center grid-cols-1 lg:grid-cols-12 auth-bg">
@@ -28,7 +28,6 @@ const AuthLayout = ({ children }) => {
                     "Get your Chatvia account now."}
                   {location.pathname === "/forget-password" &&
                     "Reset Password With Chatvia."}
-                 
                 </p>
               </div>
               {children}

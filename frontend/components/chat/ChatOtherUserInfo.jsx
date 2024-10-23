@@ -31,18 +31,28 @@ const ChatOtherUserInfo = ({
         <div className="mb-4">
           <img
             src={
-              selectedConversation.creator.id !== user?._id
-                ? selectedConversation.creator.avatar
-                : selectedConversation.participant.avatar
+              selectedConversation.lastMessage
+                ? selectedConversation.lastMessage.sender.id === user?._id
+                  ? selectedConversation.lastMessage.receiver.avatar
+                  : selectedConversation.lastMessage.sender.avatar
+                : selectedConversation.creator.id === user?._id
+                ? selectedConversation.participant.avatar // If the logged-in user is the creator, show the participant's name
+                : selectedConversation.creator.avatar // Otherwise, show the creator's name
             }
             className="w-24 h-24 p-1 mx-auto border border-gray-100 rounded-full "
             alt=""
           />
         </div>
         <h5 className="mb-1 text-16 ">
-          {selectedConversation.creator.id !== user?._id
-            ? selectedConversation.creator.name
-            : selectedConversation.participant.name}
+          {
+            selectedConversation.lastMessage
+              ? selectedConversation.lastMessage.sender.id === user?._id
+                ? selectedConversation.lastMessage.receiver.name
+                : selectedConversation.lastMessage.sender.name
+              : selectedConversation.creator.id === user?._id
+              ? selectedConversation.participant.name // If the logged-in user is the creator, show the participant's name
+              : selectedConversation.creator.name // Otherwise, show the creator's name
+          }
         </h5>
       </div>
       {/* End profile user */}
@@ -75,16 +85,21 @@ const ChatOtherUserInfo = ({
                   <div>
                     <p className="mb-1 text-gray-500 ">Name</p>
                     <h5 className="text-sm ">
-                      {selectedConversation.creator.id !== user?._id
-                        ? selectedConversation.creator.name
-                        : selectedConversation.participant.name}
+                      {selectedConversation.lastMessage
+                        ? selectedConversation.lastMessage.sender.id ===
+                          user?._id
+                          ? selectedConversation.lastMessage.receiver.name
+                          : selectedConversation.lastMessage.sender.name
+                        : selectedConversation.creator.id === user?._id
+                        ? selectedConversation.participant.name
+                        : selectedConversation.creator.name}
                     </h5>
                   </div>
                 </div>
               </div>
             )}
           </div>
-          <div className="mt-2 text-gray-700 accordion-item">
+          <div className="mt-2 text-gray-700 accordion-item ">
             <h2>
               <button
                 type="button"
@@ -117,7 +132,7 @@ const ChatOtherUserInfo = ({
                               <div className="p-2 mb-2 border rounded border-gray-100/80 ">
                                 <div className="flex items-center">
                                   <div className="flex items-center justify-center w-10 h-10 rounded ltr:mr-3 bg-violet-500/20 ">
-                                    <div className="text-xl rounded-lg text-violet-500 ">
+                                    <div className="text-xl p-2 rounded-lg text-violet-500 ">
                                       <FaFileAlt />
                                     </div>
                                   </div>
@@ -128,6 +143,7 @@ const ChatOtherUserInfo = ({
                                           .split("/")
                                           .pop()
                                           .substring(0, 9)}
+                                        .
                                         {attachment
                                           .split("/")
                                           .pop()
@@ -140,18 +156,6 @@ const ChatOtherUserInfo = ({
                                           : `Shared by ${message.sender.name}`}
                                       </p>
                                     </div>
-                                  </div>
-                                  <div className="ltr:ml-4 rtl:mr-4">
-                                    <ul className="flex items-center gap-3 mb-0 text-lg">
-                                      <li>
-                                        <a
-                                          href={attachment}
-                                          className="px-1 text-gray-500 "
-                                        >
-                                          <LuDownload />
-                                        </a>
-                                      </li>
-                                    </ul>
                                   </div>
                                 </div>
                               </div>

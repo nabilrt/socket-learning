@@ -1,7 +1,11 @@
 import {
+  createConversation,
   getAllConversationMessages,
   getAllConversations,
+  getAllUsers,
   sendUserMessages,
+  uploadAvatarForUser,
+  userDetails,
 } from "../libs/utils/api";
 import { useEffect, useState } from "react";
 import io from "socket.io-client";
@@ -10,21 +14,21 @@ import { normalizeMessage } from "../libs/utils/helper";
 import { useRef } from "react";
 import { returnMessageText } from "../libs/utils/helper";
 import ChatCard from "../components/chat/ChatCard";
-import ChatBottomBar from "../components/chat/ChatBottomBar";
 import MessageHeader from "../components/message/MessageHeader";
 import MessageList from "../components/message/MessageList";
 import MessageInput from "../components/message/MessageInput";
 import ChatOtherUserInfo from "../components/chat/ChatOtherUserInfo";
 import { ImageUploadLoader, RecordingLoader } from "../libs/utils/Loaders";
 import { getReceiverDetails } from "../libs/utils/helper";
-import { BsChatSquareDots } from "react-icons/bs";
-import { FiUser } from "react-icons/fi";
 import ChatSidebar from "../components/chat/ChatSidebar";
+import ChatSearchUser from "../components/chat/ChatSearchUser";
+import { FaArrowDown, FaArrowUp, FaEdit } from "react-icons/fa";
+import ChatProfileView from "../components/chat/ChatProfileView";
 
 const socket = io("http://localhost:9000"); // Replace with your server URL
 
 const Messenger = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, setUser } = useAuth();
   const [conversations, setConversations] = useState([]);
   const [conversationMessages, setConversationMessages] = useState(null); // Initialize as null
   const [selectedConversation, setSelectedConversation] = useState(null);
@@ -32,6 +36,7 @@ const Messenger = () => {
   const [isUploading, setIsUploading] = useState(false); // For file uploads
   const [showProfile, setShowProfile] = useState(false);
   const [selectedView, setSelectedView] = useState("chat");
+  const [users, setAllUsers] = useState([]);
 
   const scrollRef = useRef(null);
 
@@ -50,6 +55,21 @@ const Messenger = () => {
     try {
       const response = await getAllConversations();
       setConversations(response.data.conversations);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const userClick = async (user) => {
+    console.log(user);
+    const data = {
+      id: user._id,
+      participant: user.name,
+      avatar: user.avatar || null,
+    };
+    try {
+      const response = await createConversation(data);
+      setSelectedConversation(response.data.conversation);
     } catch (e) {
       console.log(e);
     }
@@ -95,13 +115,70 @@ const Messenger = () => {
     setMessageText("");
   };
 
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files[0];
+    const data = new FormData();
+    data.append("file", file);
+    try {
+      const response = await uploadAvatarForUser(data);
+      if (response.status === 200) {
+        const response = await userDetails();
+        if (response?.data && response?.data.user) {
+          setUser(response.data.user);
+          localStorage.setItem("user", JSON.stringify(response.data.user)); // <-- Sync with localStorage
+        }
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
   const handleFileClick = () => {
     fileRef.current.click();
   };
 
+  const allUsers = async (searchQuery = "") => {
+    try {
+      const response = await getAllUsers(searchQuery);
+      setAllUsers(response.data.users); // Update state with the returned users
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [profileDataToggle, setProfileDataToggle] = useState(false);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm); // Set the debounced search term
+    }, 500); // 500ms delay
+
+    // Cleanup timeout if user starts typing again before 500ms
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchTerm]); // Only run this effect if `searchTerm` changes
+
+  // Fetch users whenever the debounced search term changes
+  useEffect(() => {
+    if (debouncedSearchTerm) {
+      allUsers(debouncedSearchTerm); // Fetch users with the debounced search term
+    } else {
+      allUsers(); // Fetch all users if search term is empty
+    }
+  }, [debouncedSearchTerm]);
+
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value); // Update the search term on every input change
+  };
+
   useEffect(() => {
     getConversations();
-  }, []);
+    allUsers();
+  }, [selectedConversation]);
 
   useEffect(() => {
     getConversationMessages();
@@ -118,6 +195,8 @@ const Messenger = () => {
             normalizeMessage(newMessage.message, selectedConversation),
           ],
         }));
+
+        getConversations();
       }
     });
 
@@ -218,8 +297,14 @@ const Messenger = () => {
   return (
     <div
       className={`grid ${
-        showProfile ? "grid-cols-[5%_20%_60%_15%]" : "grid-cols-[5%_20%_75%]"
-      } overflow-y-hidden`}
+        selectedConversation !== null && showProfile
+          ? "grid-cols-[4%_21%_60%_15%]"
+          : selectedConversation !== null && !showProfile
+          ? "grid-cols-[4%_21%_75%]"
+          : selectedConversation === null &&
+            !showProfile &&
+            "grid-cols-[4%_96%]"
+      } `}
     >
       <ChatSidebar
         user={user}
@@ -228,21 +313,19 @@ const Messenger = () => {
         logout={logout}
       />
 
-      <div className="tab-content bg-slate-100">
+      <div className=" bg-[#f5f7fb]">
         {selectedView === "chat" ? (
           <div>
             <div className="px-6 pt-6">
-              <h4 className="mb-0 text-gray-700 ">Chats</h4>
+              <h4 className="mb-0 text-gray-700 font-semibold">Chats</h4>
 
-              <div className="mt-5 mb-5 rounded bg-slate-100 ">
-                <input
-                  type="text"
-                  className="w-full px-4 py-2 border border-gray-200   placeholder:text-[14px] bg-white text-[14px] focus:ring-0 outline-none rounded-md"
-                  placeholder="Search messages or users"
-                  aria-label="Search messages or users"
-                  aria-describedby="basic-addon1"
-                />
-              </div>
+              <ChatSearchUser
+                handleSearch={handleSearch}
+                setDropdownOpen={setDropdownOpen}
+                dropdownOpen={dropdownOpen}
+                users={users}
+                userClick={userClick}
+              />
             </div>
 
             <div>
@@ -250,7 +333,7 @@ const Messenger = () => {
 
               <div className="h-[610px] px-2">
                 <ul className="chat-user-list">
-                  <li className="  ">
+                  <div className=" flex flex-col gap-2 ">
                     {conversations?.map((conv) => {
                       const conversationData = returnMessageText(
                         conv,
@@ -263,18 +346,27 @@ const Messenger = () => {
                           conv={conv}
                           setSelectedConversation={setSelectedConversation}
                           conversationData={conversationData}
+                          setShowProfile={setShowProfile}
                         />
                       );
                     })}
-                  </li>
+                  </div>
                 </ul>
               </div>
             </div>
           </div>
         ) : (
-          <div>Profile View</div>
+          <ChatProfileView
+            user={user}
+            setProfileDataToggle={setProfileDataToggle}
+            profileDataToggle={profileDataToggle}
+            handleFileUpload={handleAvatarUpload}
+            fileRef={fileRef}
+            handleFileClick={handleFileClick}
+          />
         )}
       </div>
+
       <div class="w-full overflow-hidden transition-all duration-150 bg-white user-chat ">
         <div class="lg:flex">
           {selectedConversation !== null && conversationMessages ? (

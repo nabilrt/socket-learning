@@ -4,7 +4,7 @@ import { CiLogout } from "react-icons/ci";
 
 const ChatSidebar = ({ user, selectedView, setSelectedView, logout }) => {
   return (
-    <div className="sidebar-menu w-full lg:w-[75px] shadow lg:flex lg:flex-col flex h-screen flex-row justify-between items-center fixed lg:relative z-40 bottom-0 bg-white ">
+    <div className="m-0 p-0 w-full  shadow lg:flex lg:flex-col flex h-screen flex-row justify-between items-center fixed lg:relative z-40 bottom-0 bg-white ">
       <div class="hidden lg:my-5 lg:block">
         <span>
           <img src="/logo.svg" alt="" className="h-[30px]" />
@@ -63,10 +63,7 @@ const ChatSidebar = ({ user, selectedView, setSelectedView, logout }) => {
               alt=""
               className="w-10 h-10 p-1 mx-auto rounded-full bg-gray-50 "
             />
-            <CiLogout
-              className="cursor-pointer w-5 h-5"
-              onClick={logout}
-            />
+            <CiLogout className="cursor-pointer w-5 h-5" onClick={logout} />
           </li>
         </ul>
       </div>

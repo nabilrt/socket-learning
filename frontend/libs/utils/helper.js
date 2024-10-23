@@ -1,16 +1,16 @@
 export const normalizeMessage = (message, selectedConversation) => {
+  console.log(message);
   return {
     conversation_id: message.conversation_id,
     sender: {
       id: message.sender.id,
       name: message.sender.name,
-      avatar: message.sender.avatar,
+      avatar: message.receiver.avatar,
     },
     receiver: {
       id: message.receiver?.id || selectedConversation.participant.id,
       name: message.receiver?.name || selectedConversation.participant.name,
-      avatar:
-        message.receiver?.avatar || selectedConversation.participant.avatar,
+      avatar: message.sender?.avatar || selectedConversation.participant.avatar,
     },
     text: message.message || message.text, // Handle different field names
     attachments: message.attachments,
@@ -42,22 +42,29 @@ export const getTimeAgo = (timestamp) => {
 };
 
 export function returnMessageText(conv, conversationMessages, user) {
+  // Get the last message for each conversation
+
+  const lastMessage = conv?.lastMessage;
+
   const otherPerson =
-    conv.creator.id === user?._id ? conv.participant.name : conv.creator.name;
+    lastMessage && lastMessage.sender
+      ? lastMessage.sender.id === user?._id
+        ? lastMessage.receiver.name
+        : lastMessage.sender.name
+      : conv.creator.id === user?._id
+      ? conv.participant.name
+      : conv.creator.name;
+
   const otherAvatar =
-    conv.creator.id === user?._id
+    lastMessage && lastMessage.sender
+      ? lastMessage.sender.id === user?._id
+        ? lastMessage.receiver.avatar
+        : lastMessage.sender.avatar
+      : conv.creator.id === user?._id
       ? conv.participant.avatar
       : conv.creator.avatar;
 
-  // Get the last message for each conversation
-  const lastMessage = conversationMessages?.messages?.length
-    ? conversationMessages.messages[conversationMessages.messages.length - 1]
-    : conv.lastMessage;
-
-  const lastMessageTime = conversationMessages?.messages?.length
-    ? conversationMessages.messages[conversationMessages.messages.length - 1]
-        .date_time
-    : conv.lastMessage.date_time;
+  const lastMessageTime = conv?.lastMessage?.date_time;
 
   // Determine if the last message was sent by the user
   const isLastMessageFromUser = lastMessage?.sender?.id === user?._id;
@@ -103,14 +110,31 @@ export function returnMessageText(conv, conversationMessages, user) {
 export const getReceiverDetails = (selectedConversation, user) => {
   const isParticipantReceiver =
     selectedConversation?.participant.id === user?._id;
+
+  const lastMessage = selectedConversation?.lastMessage;
+
   return {
-    receiverId: isParticipantReceiver
+    receiverId: lastMessage
+      ? lastMessage.sender.id === user?._id
+        ? lastMessage.receiver.id
+        : lastMessage.sender.id
+      : isParticipantReceiver
       ? selectedConversation?.creator.id
       : selectedConversation?.participant.id,
-    receiverName: isParticipantReceiver
+
+    receiverName: lastMessage
+      ? lastMessage.sender.id === user?._id
+        ? lastMessage.receiver.name
+        : lastMessage.sender.name
+      : isParticipantReceiver
       ? selectedConversation?.creator.name
       : selectedConversation?.participant.name,
-    avatar: isParticipantReceiver
+
+    avatar: lastMessage
+      ? lastMessage.sender.id === user?._id
+        ? lastMessage.receiver.avatar
+        : lastMessage.sender.avatar
+      : isParticipantReceiver
       ? selectedConversation?.creator.avatar
       : selectedConversation?.participant.avatar,
   };

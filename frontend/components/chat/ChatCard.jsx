@@ -3,15 +3,19 @@ const ChatCard = ({
   conv,
   conversationData,
   setSelectedConversation,
+  setShowProfile,
 }) => {
   return (
     <div
-      className={`px-5 py-[15px]  hover:bg-purple-200 ${
+      className={`px-5 py-[15px] hover:bg-purple-300 ${
         selectedConversation && selectedConversation._id === conv._id
-          ? "bg-purple-100"
+          ? "bg-purple-300"
           : "bg-purple-200"
       }`}
-      onClick={() => setSelectedConversation(conv)}
+      onClick={() => {
+        setShowProfile(false);
+        setSelectedConversation(conv);
+      }}
     >
       <div className="flex gap-4">
         <div className="relative self-center ltr:mr-3 rtl:ml-3">
@@ -31,7 +35,8 @@ const ChatCard = ({
           </p>
         </div>
         <div className="text-gray-500 text-[11px] ">
-          {conversationData.structuredLastMessageTime}
+          {conversationData.structuredLastMessageTime !== "NaN days ago" &&
+            conversationData.structuredLastMessageTime}
         </div>
       </div>
     </div>

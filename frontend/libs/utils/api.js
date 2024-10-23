@@ -62,3 +62,30 @@ export const sendUserMessages = async (data) => {
     throw new Error(error.message);
   }
 };
+
+export const getAllUsers = async (searchQuery) => {
+  try {
+    const response = await axios.get(`/user/users?search=${searchQuery}`);
+    return response;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+export const createConversation = async (data) => {
+  try {
+    const response = await axios.post("/inbox/conversation", data);
+    return response;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+export const uploadAvatarForUser = async (data) => {
+  try {
+    const response = await axios.post("/user/upload-avatar", data);
+    return response;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};

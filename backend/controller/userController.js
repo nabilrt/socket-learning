@@ -67,6 +67,7 @@ const loginUser = async (req, res) => {
       {
         username: user.name,
         userId: user._id,
+        userEmail: user.email,
         avatarUrl: user.avatar,
       },
       process.env.JWT_SECRET || "secret",
@@ -83,8 +84,30 @@ const loginUser = async (req, res) => {
 };
 
 const getUsers = async (req, res) => {
+  const { search } = req.query; // Retrieve search query from request parameters
+  const userId = req.user.userId; // Assuming `req.user._id` contains the authenticated user's ID
+
   try {
-    const users = await User.find();
+    let query = {
+      _id: { $ne: userId }, // Exclude the current user by ID
+    };
+
+    if (search) {
+      // Add search criteria to the query
+      query = {
+        $and: [
+          { _id: { $ne: userId } }, // Exclude current user
+          {
+            $or: [
+              { name: { $regex: search, $options: "i" } }, // Match name
+              { email: { $regex: search, $options: "i" } }, // Match email
+            ],
+          },
+        ],
+      };
+    }
+
+    const users = await User.find(query); // Search users based on the query
     return res.status(200).json({
       users,
       message: "Users returned successfully!",
@@ -103,7 +126,7 @@ const forgotPassword = async (req, res) => {
     }
 
     const characters =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+~`|}{[]:;?><,./-=";
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#";
     let newPassword = "";
     for (let i = 0; i < 8; i++) {
       newPassword += characters.charAt(
@@ -139,10 +162,31 @@ const getMe = async (req, res) => {
   }
 };
 
+const uploadAvatar = async (req, res) => {
+  try {
+    const file = req.file;
+    const image = await cloudinaryConfig.uploader.upload(file.path, {
+      folder: "chat-app",
+    });
+    fs.unlinkSync(file.path);
+    await User.findByIdAndUpdate(req.user.userId, {
+      avatar: image.secure_url,
+    });
+    const updatedUser = await User.findById(req.user.userId);
+    return res.status(200).json({
+      message: "User Details Updated",
+      user: updatedUser,
+    });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
+
 module.exports = {
   createUser,
   loginUser,
   getUsers,
   forgotPassword,
   getMe,
+  uploadAvatar,
 };

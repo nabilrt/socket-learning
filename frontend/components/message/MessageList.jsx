@@ -107,7 +107,7 @@ const MessageList = ({ msg, user }) => {
 
               <p className="mt-1 mb-0 text-xs text-right text-white/50">
                 <span className="align-middle">
-                  {getTimeAgo(msg.date_time)}
+                  {getTimeAgo(msg?.date_time)}
                 </span>
               </p>
             </div>

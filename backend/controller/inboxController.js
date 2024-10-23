@@ -2,34 +2,54 @@ const Message = require("../models/Message");
 const Conversation = require("../models/Conversation");
 const cloudinaryConfig = require("../config/cloudinary");
 const fs = require("fs");
+const User = require("../models/User");
 
 const createConversation = async (req, res) => {
+  const { id, participant, avatar } = req.body;
+  const userId = req.user.userId; // Assuming `req.user.userId` is the logged-in user's ID
+  const username = req.user.username;
+  const userAvatar = req.user.avatarUrl || null;
+
   try {
-    const newConversation = new Conversation({
-      creator: {
-        id: req.user.userId,
-        name: req.user.username,
-        avatar: req.user.avatarUrl || null,
-      },
-      participant: {
-        name: req.body.participant,
-        id: req.body.id,
-        avatar: req.body.avatar || null,
-      },
+    // Check if a conversation already exists between the two users
+    let conversation = await Conversation.findOne({
+      $or: [
+        {
+          "creator.id": userId,
+          "participant.id": id,
+        },
+        {
+          "creator.id": id,
+          "participant.id": userId,
+        },
+      ],
     });
 
-    await newConversation.save();
-    return res.status(200).json({
-      message: "Conversation was added successfully!",
-    });
-  } catch (err) {
-    return res.status(500).json({
-      errors: {
-        common: {
-          msg: err.message,
+    if (!conversation) {
+      // If no conversation exists, create a new one
+      conversation = new Conversation({
+        creator: {
+          id: userId,
+          name: username,
+          avatar: userAvatar,
         },
-      },
+        participant: {
+          id,
+          name: participant,
+          avatar: avatar || null,
+        },
+        lastMessage: {},
+      });
+      await conversation.save();
+    }
+
+    // Return the conversation (either found or newly created)
+    return res.status(201).json({
+      conversation,
+      message: "Conversation created successfully!",
     });
+  } catch (error) {
+    return res.status(500).json({ message: "Error creating conversation" });
   }
 };
 
@@ -46,18 +66,21 @@ const sendMessage = async (req, res) => {
       req.files.map((file) => fs.unlinkSync(file.path));
     }
 
+    const senderInfo = await User.findById(req.user.userId);
+    const recieverInfo = await User.findById(req.body.receiverId);
+
     const newMessage = new Message({
       text: req.body.message,
       attachments: attachments,
       sender: {
         id: req.user.userId,
         name: req.user.username,
-        avatar: req.user.avatarUrl || null,
+        avatar: recieverInfo.avatar || null,
       },
       receiver: {
         id: req.body.receiverId,
         name: req.body.receiverName,
-        avatar: req.body.avatar || null,
+        avatar: senderInfo.avatar || null,
       },
       conversation_id: req.body.conversationId,
     });
@@ -73,7 +96,12 @@ const sendMessage = async (req, res) => {
         sender: {
           id: req.user.userId,
           name: req.user.username,
-          avatar: req.user.avatarUrl,
+          avatar: senderInfo.avatar,
+        },
+        receiver: {
+          id: req.body.receiverId,
+          name: req.body.receiverName,
+          avatar: recieverInfo.avatar || null,
         },
         message: req.body.message,
         attachments: attachments,

@@ -14,16 +14,21 @@ const MessageHeader = ({
       <div className="grid items-center grid-cols-12">
         <div className="col-span-8 sm:col-span-4">
           <div className="flex gap-4 items-center">
-          <IoIosArrowBack
-                className="cursor-pointer"
-                onClick={() => setSelectedConversation(null)}
-              />
+            <IoIosArrowBack
+              className="cursor-pointer"
+              onClick={() => {
+                setShowProfile(false);
+                setSelectedConversation(null);
+              }}
+            />
             <div className="rtl:ml-3 ltr:mr-3">
-            
-
               <img
                 src={
-                  selectedConversation.creator.id === user?._id
+                  selectedConversation.lastMessage
+                    ? selectedConversation.lastMessage.sender.id === user?._id
+                      ? selectedConversation.lastMessage.receiver.avatar
+                      : selectedConversation.lastMessage.sender.avatar
+                    : selectedConversation.creator.id === user?._id
                     ? selectedConversation.participant.avatar // If the logged-in user is the creator, show the participant's name
                     : selectedConversation.creator.avatar // Otherwise, show the creator's name
                 }
@@ -35,7 +40,11 @@ const MessageHeader = ({
               <h5 className="mb-0 truncate text-16 ltr:block rtl:hidden">
                 <p className="text-gray-800 ">
                   {
-                    selectedConversation.creator.id === user?._id
+                    selectedConversation.lastMessage
+                      ? selectedConversation.lastMessage.sender.id === user?._id
+                        ? selectedConversation.lastMessage.receiver.name
+                        : selectedConversation.lastMessage.sender.name
+                      : selectedConversation.creator.id === user?._id
                       ? selectedConversation.participant.name // If the logged-in user is the creator, show the participant's name
                       : selectedConversation.creator.name // Otherwise, show the creator's name
                   }

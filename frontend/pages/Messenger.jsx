@@ -10,7 +10,7 @@ import {
 import { useEffect, useState } from "react";
 import io from "socket.io-client";
 import { useAuth } from "../libs/context/auth-context";
-import { normalizeMessage } from "../libs/utils/helper";
+import { normalizeMessage, returnOtherUserData } from "../libs/utils/helper";
 import { useRef } from "react";
 import { returnMessageText } from "../libs/utils/helper";
 import ChatCard from "../components/chat/ChatCard";
@@ -337,8 +337,8 @@ const Messenger = () => {
                     {conversations?.map((conv) => {
                       const conversationData = returnMessageText(
                         conv,
-                        conversationMessages,
-                        user
+                        user,
+                        users
                       );
                       return (
                         <ChatCard
@@ -377,22 +377,38 @@ const Messenger = () => {
                 setShowProfile={setShowProfile}
                 showProfile={showProfile}
                 setSelectedConversation={setSelectedConversation}
+                users={users}
               />
 
               <div
                 className="h-[80vh] p-4 lg:p-6 overflow-y-auto"
                 data-simplebar=""
               >
-                {conversationMessages.messages.map((msg, index) => (
-                  <ul
-                    className={`mb-0 flex flex-col ${
-                      msg.sender.id === user?._id ? "items-end" : "items-start"
-                    }`}
-                    ref={scrollRef}
-                  >
-                    <MessageList msg={msg} user={user} />
-                  </ul>
-                ))}
+                {conversationMessages.messages.map((msg, index) => {
+                  const { otherAvatar } = returnOtherUserData(
+                    selectedConversation,
+                    user,
+                    users
+                  );
+
+                  return (
+                    <ul
+                      key={index}
+                      className={`mb-0 flex flex-col ${
+                        msg.sender.id === user?._id
+                          ? "items-end"
+                          : "items-start"
+                      }`}
+                      ref={scrollRef}
+                    >
+                      <MessageList
+                        msg={msg}
+                        user={user}
+                        otherAvatar={otherAvatar}
+                      />
+                    </ul>
+                  );
+                })}
                 <div className="flex items-center text-right space-x-2">
                   {isUploading && <ImageUploadLoader />}
                   {isRecording && <RecordingLoader />}
@@ -424,15 +440,25 @@ const Messenger = () => {
           )}
         </div>
       </div>
-      {showProfile && (
-        <ChatOtherUserInfo
-          selectedConversation={selectedConversation}
-          user={user}
-          conversationMessages={conversationMessages}
-          setShowProfile={setShowProfile}
-          showProfile={showProfile}
-        />
-      )}
+      {showProfile &&
+        (() => {
+          const { otherPerson, otherAvatar } = returnMessageText(
+            selectedConversation,
+            user,
+            users
+          );
+          return (
+            <ChatOtherUserInfo
+              selectedConversation={selectedConversation}
+              user={user}
+              conversationMessages={conversationMessages}
+              setShowProfile={setShowProfile}
+              showProfile={showProfile}
+              otherPerson={otherPerson}
+              otherAvatar={otherAvatar}
+            />
+          );
+        })()}
     </div>
   );
 };

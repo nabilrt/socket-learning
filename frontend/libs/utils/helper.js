@@ -41,28 +41,54 @@ export const getTimeAgo = (timestamp) => {
   return `${diffInDays} days ago`;
 };
 
-export function returnMessageText(conv, conversationMessages, user) {
-  // Get the last message for each conversation
+export function returnOtherUserData(conv, user, users) {
+  const lastMessage = conv?.lastMessage; // Assuming conversation has a lastMessage field
 
-  const lastMessage = conv?.lastMessage;
+  const findUserById = (id) => users.find((user) => user._id === id);
 
   const otherPerson =
     lastMessage && lastMessage.sender
       ? lastMessage.sender.id === user?._id
-        ? lastMessage.receiver.name
-        : lastMessage.sender.name
+        ? findUserById(lastMessage.receiver.id)?.name
+        : findUserById(lastMessage.sender.id)?.name
       : conv.creator.id === user?._id
-      ? conv.participant.name
-      : conv.creator.name;
+      ? findUserById(conv.participant.id)?.name
+      : findUserById(conv.creator.id)?.name;
 
   const otherAvatar =
     lastMessage && lastMessage.sender
       ? lastMessage.sender.id === user?._id
-        ? lastMessage.receiver.avatar
-        : lastMessage.sender.avatar
+        ? findUserById(lastMessage.receiver.id)?.avatar
+        : findUserById(lastMessage.sender.id)?.avatar
       : conv.creator.id === user?._id
-      ? conv.participant.avatar
-      : conv.creator.avatar;
+      ? findUserById(conv.participant.id)?.avatar
+      : findUserById(conv.creator.id)?.avatar;
+
+  return { otherPerson, otherAvatar };
+}
+export function returnMessageText(conv, user, users) {
+  // Get the last message for each conversation
+
+  const lastMessage = conv?.lastMessage;
+  const findUserById = (id) => users.find((user) => user._id === id);
+
+  const otherPerson =
+    lastMessage && lastMessage.sender
+      ? lastMessage.sender.id === user._id
+        ? findUserById(lastMessage.receiver.id)?.name
+        : findUserById(lastMessage.sender.id)?.name
+      : conv.creator.id === user._id
+      ? findUserById(conv.participant.id)?.name
+      : findUserById(conv.creator.id)?.name;
+
+  const otherAvatar =
+    lastMessage && lastMessage.sender
+      ? lastMessage.sender.id === user._id
+        ? findUserById(lastMessage.receiver.id)?.avatar
+        : findUserById(lastMessage.sender.id)?.avatar
+      : conv.creator.id === user._id
+      ? findUserById(conv.participant.id)?.avatar
+      : findUserById(conv.creator.id)?.avatar;
 
   const lastMessageTime = conv?.lastMessage?.date_time;
 

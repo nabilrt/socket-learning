@@ -1,21 +1,13 @@
 import { getTimeAgo } from "../../libs/utils/helper";
 import { IoMdAttach } from "react-icons/io";
 
-const MessageList = ({ msg, user }) => {
+const MessageList = ({ msg, user, otherAvatar }) => {
   return (
     <li className="clear-both py-4">
       <div className="flex items-end gap-3">
         <div>
           {msg.sender.id !== user?._id && (
-            <img
-              src={`${
-                msg.sender.id === user?._id
-                  ? msg.sender.avatar
-                  : msg.receiver.avatar
-              }`}
-              alt=""
-              className="rounded-full h-9 w-9"
-            />
+            <img src={otherAvatar} alt="" className="rounded-full h-9 w-9" />
           )}
         </div>
         <div>

@@ -18,7 +18,7 @@ const ChatSearchUser = ({
         onBlur={() => setTimeout(() => setDropdownOpen(false), 100)} // Close dropdown on blur with a slight delay
       />
       {dropdownOpen && (
-        <div className="absolute w-full bg-white shadow-lg z-100">
+        <div className="absolute w-full bg-white shadow-lg z-[1500]">
           <ul>
             {users.map((user) => (
               <li
